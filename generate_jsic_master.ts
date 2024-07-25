@@ -5,15 +5,6 @@ import _ from 'lodash';
 import iconv from 'iconv-lite';
 import { parse } from 'csv-parse/sync';
 
-
-interface CSVLabelRow {
-  '大分類コード': string;
-  '中分類コード': string;
-  '小分類コード': string;
-  '細分類コード': string;
-  '項目名': string;
-}
-
 interface CSVRow {
   section_code: string;
   division_code: string;
@@ -22,23 +13,15 @@ interface CSVRow {
   name: string;
 }
 
-
-const columnMapping: { [key in keyof CSVLabelRow]: keyof CSVRow } = {
-  '大分類コード': 'section_code',
-  '中分類コード': 'division_code',
-  '小分類コード': 'group_code',
-  '細分類コード': 'class_code',
-  '項目名': 'name',
-};
-
 const headerMap = {
-  section: ['code', 'name'], // section_codeとname
-  division: ['code', 'jsic_section_code', 'name'], // division_codeとsection_codeとname
-  group: ['code', 'jsic_division_code', 'name'], // group_codeとdivision_codeとname
-  class: ['code', 'jsic_group_code', 'name'], // class_codeとgroup_codeとname
+  section: ['id', 'code', 'name'],
+  division: ['id', 'code', 'jsic_section_code', 'name'],
+  group: ['id', 'code', 'jsic_division_code', 'name'],
+  class: ['id', 'code', 'jsic_group_code', 'name'],
 } as const;
 
-const writeCSV = (filePath: string, data: CSVRow[], type: keyof typeof headerMap) => {
+
+const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) => {
   const header = `${headerMap[type]}\n`;
   const rows = _.map(data, row => _.map(row, item => `"${item}"`).join(',')).join('\n');
   fs.writeFileSync(filePath, header + rows);
@@ -49,42 +32,32 @@ const writeCSV = (filePath: string, data: CSVRow[], type: keyof typeof headerMap
   const fileBuffer = fs.readFileSync(filePath);
   const decodedData = iconv.decode(fileBuffer, 'shift_jis');
   const masterData = parse(decodedData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
-  const props: Array<keyof CSVLabelRow> = masterData[0];
 
   const sectionData: any[] = [];
   const divisionData: any[] = [];
   const groupData: any[] = [];
   const classData: any[] = [];
 
-  for (let i = 1; i < masterData.length; i++) {
-    const row = _.transform(masterData[i], (result: CSVRow, value: string, index: number) => {
-      const key = columnMapping[props[index]];
-      result[key] = value;
-    }, {} as CSVRow);
+  let sectionId: number = 1;
+  let divisionId: number = 1;
+  let groupId: number = 1;
+  let classId: number = 1;
 
-    if (Number(row.class_code)) { // 細分類
-      classData.push([
-        row.class_code,
-        row.group_code,
-        row.name,
-      ]);
-    } else if (Number(row.group_code)) { // 小分類
-      groupData.push([
-        row.group_code,
-        row.division_code,
-        row.name,
-      ]);
-    } else if (Number(row.division_code)) { // 中分類
-      divisionData.push([
-        row.division_code,
-        row.section_code,
-        row.name,
-      ]);
-    } else { // 大分類
-      sectionData.push([
-        row.section_code,
-        row.name,
-      ]);
+  for (let i = 1; i < masterData.length; i++) {
+    const row = masterData[i];
+    const [code, name] = row;
+    if (code.length === 1) {
+      sectionData.push([sectionId, code, name]);
+      sectionId++;
+    } else if (code.length === 2) {
+      divisionData.push([divisionId, code, sectionId - 1, name]);
+      divisionId++;
+    } else if (code.length === 3) {
+      groupData.push([groupId, code, divisionId - 1, name]);
+      groupId++;
+    } else if (code.length === 4) {
+      classData.push([classId, code, groupId - 1, name]);
+      classId++;
     }
   }
 
