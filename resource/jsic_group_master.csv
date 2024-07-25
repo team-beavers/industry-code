@@ -1,4 +1,4 @@
-external_id,jsic_division_id,name
+code,jsic_division_code,name
 "010","01","管理，補助的経済活動を行う事業所（01農業）"
 "011","01","耕種農業"
 "012","01","畜産農業"

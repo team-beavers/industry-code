@@ -32,10 +32,10 @@ const columnMapping: { [key in keyof CSVLabelRow]: keyof CSVRow } = {
 };
 
 const headerMap = {
-  section: ['external_id', 'name'], // section_codeとname
-  division: ['external_id', 'jsic_section_id', 'name'], // division_codeとsection_codeとname
-  group: ['external_id', 'jsic_division_id', 'name'], // group_codeとdivision_codeとname
-  class: ['external_id', 'jsic_group_id', 'name'], // class_codeとgroup_codeとname
+  section: ['code', 'name'], // section_codeとname
+  division: ['code', 'jsic_section_code', 'name'], // division_codeとsection_codeとname
+  group: ['code', 'jsic_division_code', 'name'], // group_codeとdivision_codeとname
+  class: ['code', 'jsic_group_code', 'name'], // class_codeとgroup_codeとname
 } as const;
 
 const writeCSV = (filePath: string, data: CSVRow[], type: keyof typeof headerMap) => {

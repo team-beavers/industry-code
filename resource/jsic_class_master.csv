@@ -1,4 +1,4 @@
-external_id,jsic_group_id,name
+code,jsic_group_code,name
 "0100","010","主として管理事務を行う本社等"
 "0109","010","その他の管理，補助的経済活動を行う事業所"
 "0111","011","米作農業"

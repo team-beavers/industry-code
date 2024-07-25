@@ -14,7 +14,11 @@
   - 第12回改訂日本標準産業分類がベース （2024年7月20日時点）
 
 # パッケージのインストール
-yarn install
+```zsh
+$ yarn install
+```
 
 # masterデータの作成
-yarn run generate_master
+```zsh
+$ yarn run generate_master
+```
