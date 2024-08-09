@@ -43,21 +43,36 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
   let groupId: number = 1;
   let classId: number = 1;
 
+  let sectionCode: string = '';
+  let divisionCode: string = '';
+  let groupCode: string = '';
+  let classCode: string = '';
+
   for (let i = 1; i < masterData.length; i++) {
     const row = masterData[i];
     const [code, name] = row;
-    if (code.length === 1) {
-      sectionData.push([sectionId, code, name]);
-      sectionId++;
-    } else if (code.length === 2) {
-      divisionData.push([divisionId, code, sectionId - 1, name]);
-      divisionId++;
-    } else if (code.length === 3) {
-      groupData.push([groupId, code, divisionId - 1, name]);
-      groupId++;
-    } else if (code.length === 4) {
-      classData.push([classId, code, groupId - 1, name]);
-      classId++;
+
+    switch (code.length) {
+      case 1:
+        sectionCode = code;
+        sectionData.push([sectionId, sectionCode, name]);
+        sectionId++;
+        break;
+      case 2:
+        divisionCode = code;
+        divisionData.push([divisionId, divisionCode, sectionCode, name]);
+        divisionId++;
+        break;
+      case 3:
+        groupCode = code;
+        groupData.push([groupId, groupCode, divisionCode, name]);
+        groupId++;
+        break;
+      case 4:
+        classCode = code;
+        classData.push([classId, classCode, groupCode, name]);
+        classId++;
+        break;
     }
   }
 
