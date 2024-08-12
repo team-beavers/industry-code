@@ -52,25 +52,31 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
     const row = masterData[i];
     const [code, name] = row;
 
+    const replacedName = name.
+      replaceAll("，", "、").
+      replaceAll('･','・').
+      replaceAll("(", "（").
+      replaceAll(")", "）");
+
     switch (code.length) {
       case 1:
         sectionCode = code;
-        sectionData.push([sectionId, sectionCode, name.replaceAll('･','・',)]);
+        sectionData.push([sectionId, sectionCode, replacedName]);
         sectionId++;
         break;
       case 2:
         divisionCode = code;
-        divisionData.push([divisionId, divisionCode, sectionCode, name.replaceAll('･','・',)]);
+        divisionData.push([divisionId, divisionCode, sectionCode, replacedName]);
         divisionId++;
         break;
       case 3:
         groupCode = code;
-        groupData.push([groupId, groupCode, divisionCode, name.replaceAll('･','・',)]);
+        groupData.push([groupId, groupCode, divisionCode, replacedName]);
         groupId++;
         break;
       case 4:
         classCode = code;
-        classData.push([classId, classCode, groupCode, name.replaceAll('･','・')]);
+        classData.push([classId, classCode, groupCode, replacedName]);
         classId++;
         break;
     }
