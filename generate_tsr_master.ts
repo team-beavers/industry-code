@@ -3,16 +3,7 @@
 
 import fs from 'fs';
 import _ from 'lodash';
-import iconv from 'iconv-lite';
 import { parse } from 'csv-parse/sync';
-
-interface CSVRow {
-  section_code: string;
-  division_code: string;
-  group_code: string;
-  class_code: string;
-  name: string;
-}
 
 const headerMap = {
   section: ['id', 'code', 'name'],
@@ -20,13 +11,6 @@ const headerMap = {
   group: ['id', 'code', 'tsr_division_code', 'name'],
   class: ['id', 'code', 'tsr_group_code', 'name'],
 } as const;
-
-// tsr固有の追加コード
-const additionalCode = [
-  ['3319', 'その他の電気事業所（管理事務）'],
-  ['3419', 'その他のガス事業所（管理事務）'],
-  ['3639', 'その他の下水道事業所（管理事務）'],
-];
 
 // jsicに含まれるが、TSRには含まれない分類名
 const excludeCodeMap = {
@@ -41,15 +25,11 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
   fs.writeFileSync(filePath, header + rows);
 };
 
+
 (async () => {
   const filePath = './resource/jsic_v12.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
-  const jsicMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
-
-  const tsrMasterData = [
-    ...jsicMasterData,
-    ...additionalCode,
-  ];
+  const tsrMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
   const sectionData: any[] = [];
   const divisionData: any[] = [];

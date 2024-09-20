@@ -2,16 +2,7 @@
 
 import fs from 'fs';
 import _ from 'lodash';
-import iconv from 'iconv-lite';
 import { parse } from 'csv-parse/sync';
-
-interface CSVRow {
-  section_code: string;
-  division_code: string;
-  group_code: string;
-  class_code: string;
-  name: string;
-}
 
 const headerMap = {
   section: ['id', 'code', 'name'],
@@ -30,7 +21,7 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
 (async () => {
   const filePath = './resource/jsic_v14.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
-  const masterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
+  const jsicMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
   const sectionData: any[] = [];
   const divisionData: any[] = [];
@@ -47,8 +38,8 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
   let groupCode: string = '';
   let classCode: string = '';
 
-  for (let i = 1; i < masterData.length; i++) {
-    const row = masterData[i];
+  for (let i = 1; i < jsicMasterData.length; i++) {
+    const row = jsicMasterData[i];
     const [code, name] = row;
 
     switch (code.length) {
