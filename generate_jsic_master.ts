@@ -29,9 +29,8 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
 
 (async () => {
   const filePath = './resource/jsic_v14.csv';
-  const fileBuffer = fs.readFileSync(filePath);
-  const decodedData = iconv.decode(fileBuffer, 'shift_jis');
-  const masterData = parse(decodedData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
+  const fileData = fs.readFileSync(filePath, 'utf-8');
+  const masterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
   const sectionData: any[] = [];
   const divisionData: any[] = [];
