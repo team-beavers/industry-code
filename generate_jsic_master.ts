@@ -1,4 +1,4 @@
-// jsic分類項目表から[大分類、中分類、小分類、最分類]4つのmasterデータを出力する。
+// jsic分類項目表(第14回改訂)から[大分類、中分類、小分類、最分類]4つのmasterデータを出力する。
 
 import fs from 'fs';
 import _ from 'lodash';
@@ -28,7 +28,7 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
 };
 
 (async () => {
-  const filePath = './resource/jsic.csv';
+  const filePath = './resource/jsic_v14.csv';
   const fileBuffer = fs.readFileSync(filePath);
   const decodedData = iconv.decode(fileBuffer, 'shift_jis');
   const masterData = parse(decodedData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
@@ -76,10 +76,10 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
     }
   }
 
-  writeCSV('./resource/jsic_section_master.csv', sectionData, 'section');
-  writeCSV('./resource/jsic_division_master.csv', divisionData, 'division');
-  writeCSV('./resource/jsic_group_master.csv', groupData, 'group');
-  writeCSV('./resource/jsic_class_master.csv', classData, 'class');
+  writeCSV('./resource/jsic/jsic_section_master.csv', sectionData, 'section');
+  writeCSV('./resource/jsic/jsic_division_master.csv', divisionData, 'division');
+  writeCSV('./resource/jsic/jsic_group_master.csv', groupData, 'group');
+  writeCSV('./resource/jsic/jsic_class_master.csv', classData, 'class');
 
 })().then(() => {
   console.log('done');
