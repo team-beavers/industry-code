@@ -11,10 +11,24 @@ const headerMap = {
   class: ['id', 'code', 'jsic_group_code', 'name'],
 } as const;
 
+type HeaderMap = typeof headerMap;
 
-const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) => {
+type DataType = {
+  [K in keyof HeaderMap]: {
+    [Field in HeaderMap[K][number]]: string;
+  };
+};
+
+
+const writeCSV = <T extends keyof HeaderMap>(
+  filePath: string,
+  data: DataType[T][],
+  type: T
+) => {
   const header = `${headerMap[type]}\n`;
-  const rows = _.map(data, row => _.map(row, item => `"${item}"`).join(',')).join('\n');
+  const rows = _.map(data, (row) => {
+    return _.map(headerMap[type], (key: keyof DataType[T]) => `"${row[key]}"`).join(',');
+  }).join('\n');
   fs.writeFileSync(filePath, header + rows);
 };
 
@@ -23,10 +37,10 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
   const fileData = fs.readFileSync(filePath, 'utf-8');
   const jsicMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
-  const sectionData: any[] = [];
-  const divisionData: any[] = [];
-  const groupData: any[] = [];
-  const classData: any[] = [];
+  const sectionData: DataType['section'][] = [];
+  const divisionData: DataType['division'][] = [];
+  const groupData: DataType['group'][] = [];
+  const classData: DataType['class'][] = [];
 
   let sectionId: number = 1;
   let divisionId: number = 1;
@@ -45,22 +59,41 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
     switch (code.length) {
       case 1:
         sectionCode = code;
-        sectionData.push([sectionId, sectionCode, name.replaceAll('･','・',)]);
+        sectionData.push({
+          id: sectionId.toString(),
+          code: sectionCode,
+          name: name.replaceAll('･','・')
+        });
         sectionId++;
         break;
       case 2:
         divisionCode = code;
-        divisionData.push([divisionId, divisionCode, sectionCode, name.replaceAll('･','・',)]);
+        divisionData.push({
+          id: divisionId.toString(),
+          code: divisionCode,
+          jsic_section_code: sectionCode,
+          name: name.replaceAll('･','・')
+        });
         divisionId++;
         break;
       case 3:
         groupCode = code;
-        groupData.push([groupId, groupCode, divisionCode, name.replaceAll('･','・',)]);
+        groupData.push({
+          id: groupId.toString(),
+          code: groupCode,
+          jsic_division_code: divisionCode,
+          name: name.replaceAll('･','・')
+        });
         groupId++;
         break;
       case 4:
         classCode = code;
-        classData.push([classId, classCode, groupCode, name.replaceAll('･','・')]);
+        classData.push({
+          id: classId.toString(),
+          code: classCode,
+          jsic_group_code: groupCode,
+          name: name.replaceAll('･','・')
+        });
         classId++;
         break;
     }

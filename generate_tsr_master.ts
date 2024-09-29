@@ -5,13 +5,6 @@ import fs from 'fs';
 import _ from 'lodash';
 import { parse } from 'csv-parse/sync';
 
-const headerMap = {
-  section: ['id', 'code', 'name'],
-  division: ['id', 'code', 'tsr_section_code', 'name'],
-  group: ['id', 'code', 'tsr_division_code', 'name'],
-  class: ['id', 'code', 'tsr_group_code', 'name'],
-} as const;
-
 // jsicに含まれるが、TSRには含まれない分類名
 const excludeCodeMap = {
   group: ['管理，補助的経済活動を行う事業所'],
@@ -19,9 +12,30 @@ const excludeCodeMap = {
 };
 
 
-const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) => {
+const headerMap = {
+  section: ['id', 'code', 'name'],
+  division: ['id', 'code', 'tsr_section_code', 'name'],
+  group: ['id', 'code', 'tsr_division_code', 'name'],
+  class: ['id', 'code', 'tsr_group_code', 'name'],
+} as const;
+
+type HeaderMap = typeof headerMap;
+
+type DataType = {
+  [K in keyof HeaderMap]: {
+    [Field in HeaderMap[K][number]]: string | number;
+  };
+};
+
+const writeCSV = <T extends keyof HeaderMap>(
+  filePath: string,
+  data: DataType[T][],
+  type: T
+) => {
   const header = `${headerMap[type]}\n`;
-  const rows = _.map(data, row => _.map(row, item => `"${item}"`).join(',')).join('\n');
+  const rows = _.map(data, (row) => {
+    return _.map(headerMap[type], (key: keyof DataType[T]) => `"${row[key]}"`).join(',');
+  }).join('\n');
   fs.writeFileSync(filePath, header + rows);
 };
 
@@ -31,10 +45,10 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
   const fileData = fs.readFileSync(filePath, 'utf-8');
   const tsrMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
-  const sectionData: any[] = [];
-  const divisionData: any[] = [];
-  const groupData: any[] = [];
-  const classData: any[] = [];
+  const sectionData: DataType['section'][] = [];
+  const divisionData: DataType['division'][] = [];
+  const groupData: DataType['group'][] = [];
+  const classData: DataType['class'][] = [];
 
   let sectionId: number = 1;
   let divisionId: number = 1;
@@ -55,12 +69,21 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
     switch (type) {
       case 'section':
         sectionCode = code;
-        sectionData.push([sectionId, sectionCode, name.replaceAll('･','・',)]);
+        sectionData.push({
+          id: sectionId,
+          code: sectionCode,
+          name: name.replaceAll('･','・')
+        });
         sectionId++;
         break;
       case 'division':
         divisionCode = code;
-        divisionData.push([divisionId, divisionCode, sectionCode, name.replaceAll('･','・',)]);
+        divisionData.push({
+          id: divisionId,
+          code: divisionCode,
+          tsr_section_code: sectionCode,
+          name: name.replaceAll('･','・')
+        });
         divisionId++;
         break;
       case 'group':
@@ -68,7 +91,12 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
           continue;
         }
         groupCode = code;
-        groupData.push([groupId, groupCode, divisionCode, name.replaceAll('･','・',)]);
+        groupData.push({
+          id: groupId,
+          code: groupCode,
+          tsr_division_code: divisionCode,
+          name: name.replaceAll('･','・')
+        });
         groupId++;
         break;
       case 'class':
@@ -76,7 +104,12 @@ const writeCSV = (filePath: string, data: any[], type: keyof typeof headerMap) =
           continue;
         }
         classCode = code;
-        classData.push([classId, classCode, groupCode, name.replaceAll('･','・')]);
+        classData.push({
+          id: classId,
+          code: classCode,
+          tsr_group_code: groupCode,
+          name: name.replaceAll('･','・')
+        });
         classId++;
         break;
     }
