@@ -24,9 +24,7 @@ const writeCSV = <T extends keyof HeaderMap>(
   const header = `${headerMap[type]}\n`;
   const rows = _.map(data, (row) => {
     // nameは・周りやる
-    return _.map(headerMap[type], (key) => {
-      return `"${row[key]}"`
-    }).join(',');
+    return _.map(headerMap[type], (key: keyof DataType[T]) =>`"${row[key]}"`).join(',');
   }).join('\n');
   fs.writeFileSync(filePath, header + rows);
 };
