@@ -15,7 +15,7 @@ type HeaderMap = typeof headerMap;
 
 type DataType = {
   [K in keyof HeaderMap]: {
-    [Field in HeaderMap[K][number]]: string;
+    [Field in HeaderMap[K][number]]: string | number;
   };
 };
 
@@ -60,7 +60,7 @@ const writeCSV = <T extends keyof HeaderMap>(
       case 1:
         sectionCode = code;
         sectionData.push({
-          id: sectionId.toString(),
+          id: sectionId,
           code: sectionCode,
           name: name.replaceAll('･','・')
         });
@@ -69,7 +69,7 @@ const writeCSV = <T extends keyof HeaderMap>(
       case 2:
         divisionCode = code;
         divisionData.push({
-          id: divisionId.toString(),
+          id: divisionId,
           code: divisionCode,
           jsic_section_code: sectionCode,
           name: name.replaceAll('･','・')
@@ -79,7 +79,7 @@ const writeCSV = <T extends keyof HeaderMap>(
       case 3:
         groupCode = code;
         groupData.push({
-          id: groupId.toString(),
+          id: groupId,
           code: groupCode,
           jsic_division_code: divisionCode,
           name: name.replaceAll('･','・')
@@ -89,7 +89,7 @@ const writeCSV = <T extends keyof HeaderMap>(
       case 4:
         classCode = code;
         classData.push({
-          id: classId.toString(),
+          id: classId,
           code: classCode,
           jsic_group_code: groupCode,
           name: name.replaceAll('･','・')
