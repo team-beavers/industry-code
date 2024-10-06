@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "generate_master": "node --loader ts-node/esm generate_jsic_master.ts"
+    "generate_jsic_master": "node --loader ts-node/esm generate_jsic_master.ts",
+    "generate_tsr_master": "node --loader ts-node/esm generate_tsr_master.ts"
   },
   "dependencies": {
     "csv-parse": "^5.5.6",

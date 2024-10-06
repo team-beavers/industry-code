@@ -1,14 +1,22 @@
-// jsic分類項目表(第14回改訂)から[大分類、中分類、小分類、最分類]4つのmasterデータを出力する。
+// jsic分類項目表(第12回改訂)から[大分類、中分類、小分類、最分類]4つのmasterデータを出力する。
+// jsicとtsrの差分を考慮[https://www.tsr-net.co.jp/service/detail/pdf/code_book.pdf]
 
 import fs from 'fs';
 import _ from 'lodash';
 import { parse } from 'csv-parse/sync';
 
+// jsicに含まれるが、TSRには含まれない分類名
+const excludeCodeMap = {
+  group: ['管理，補助的経済活動を行う事業所'],
+  class: ['管理，補助的経済活動を行う事業所', '主として管理事務を行う本社等', 'その他の管理，補助的経済活動を行う事業所', '自家用倉庫'],
+};
+
+
 const headerMap = {
   section: ['id', 'code', 'name'],
-  division: ['id', 'code', 'jsic_section_code', 'name'],
-  group: ['id', 'code', 'jsic_division_code', 'name'],
-  class: ['id', 'code', 'jsic_group_code', 'name'],
+  division: ['id', 'code', 'tsr_section_code', 'name'],
+  group: ['id', 'code', 'tsr_division_code', 'name'],
+  class: ['id', 'code', 'tsr_group_code', 'name'],
 } as const;
 
 type HeaderMap = typeof headerMap;
@@ -18,7 +26,6 @@ type DataType = {
     [Field in HeaderMap[K][number]]: string | number;
   };
 };
-
 
 const writeCSV = <T extends keyof HeaderMap>(
   filePath: string,
@@ -32,10 +39,11 @@ const writeCSV = <T extends keyof HeaderMap>(
   fs.writeFileSync(filePath, header + rows);
 };
 
+
 (async () => {
-  const filePath = './resource/jsic_v14.csv';
+  const filePath = './resource/jsic_v12.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
-  const jsicMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
+  const tsrMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
   const sectionData: DataType['section'][] = [];
   const divisionData: DataType['division'][] = [];
@@ -52,12 +60,14 @@ const writeCSV = <T extends keyof HeaderMap>(
   let groupCode: string = '';
   let classCode: string = '';
 
-  for (let i = 1; i < jsicMasterData.length; i++) {
-    const row = jsicMasterData[i];
+  for (let i = 1; i < tsrMasterData.length; i++) {
+    const row = tsrMasterData[i];
     const [code, name] = row;
 
-    switch (code.length) {
-      case 1:
+    const type = code.length === 1 ? 'section' : code.length === 2 ? 'division' : code.length === 3 ? 'group' : 'class';
+
+    switch (type) {
+      case 'section':
         sectionCode = code;
         sectionData.push({
           id: sectionId,
@@ -66,32 +76,38 @@ const writeCSV = <T extends keyof HeaderMap>(
         });
         sectionId++;
         break;
-      case 2:
+      case 'division':
         divisionCode = code;
         divisionData.push({
           id: divisionId,
           code: divisionCode,
-          jsic_section_code: sectionCode,
+          tsr_section_code: sectionCode,
           name: name.replaceAll('･','・')
         });
         divisionId++;
         break;
-      case 3:
+      case 'group':
+        if (_.some(excludeCodeMap.group, (val) => _.includes(name, val))) {
+          continue;
+        }
         groupCode = code;
         groupData.push({
           id: groupId,
           code: groupCode,
-          jsic_division_code: divisionCode,
+          tsr_division_code: divisionCode,
           name: name.replaceAll('･','・')
         });
         groupId++;
         break;
-      case 4:
+      case 'class':
+        if (_.some(excludeCodeMap.class, (val) => _.includes(name, val))) {
+          continue;
+        }
         classCode = code;
         classData.push({
           id: classId,
           code: classCode,
-          jsic_group_code: groupCode,
+          tsr_group_code: groupCode,
           name: name.replaceAll('･','・')
         });
         classId++;
@@ -99,10 +115,10 @@ const writeCSV = <T extends keyof HeaderMap>(
     }
   }
 
-  writeCSV('./resource/jsic/jsic_section_master.csv', sectionData, 'section');
-  writeCSV('./resource/jsic/jsic_division_master.csv', divisionData, 'division');
-  writeCSV('./resource/jsic/jsic_group_master.csv', groupData, 'group');
-  writeCSV('./resource/jsic/jsic_class_master.csv', classData, 'class');
+  writeCSV('./resource/tsr/tsr_section_master.csv', sectionData, 'section');
+  writeCSV('./resource/tsr/tsr_division_master.csv', divisionData, 'division');
+  writeCSV('./resource/tsr/tsr_group_master.csv', groupData, 'group');
+  writeCSV('./resource/tsr/tsr_class_master.csv', classData, 'class');
 
 })().then(() => {
   console.log('done');
