@@ -33,7 +33,7 @@ const writeCSV = <T extends keyof HeaderMap>(
 };
 
 (async () => {
-  const filePath = './resource/jsic_v14.csv';
+  const filePath = './resource/origin/jsic_v14.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
   const jsicMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 

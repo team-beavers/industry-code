@@ -31,7 +31,7 @@ const writeCSV = <T extends keyof HeaderMap>(
 
 
 (async () => {
-  const filePath = './resource/salesnow.csv';
+  const filePath = './resource/origin/salesnow.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
   const salesnowMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
