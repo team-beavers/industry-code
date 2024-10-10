@@ -41,7 +41,7 @@ const writeCSV = <T extends keyof HeaderMap>(
 
 
 (async () => {
-  const filePath = './resource/jsic_v12.csv';
+  const filePath = './resource/origin/jsic_v12.csv';
   const fileData = fs.readFileSync(filePath, 'utf-8');
   const tsrMasterData = parse(fileData, { quote: '"', ltrim: true, rtrim: true, delimiter: ',' });
 
